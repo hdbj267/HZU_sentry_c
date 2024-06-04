@@ -38,7 +38,7 @@ osThreadId_t Gimbal_Task_Handler;
 const osThreadAttr_t Gimbal_Task_attr = {
   .name = "Gimbal_Task",
   .priority = (osPriority_t) osPriorityBelowNormal5,
-  .stack_size = 128 * 4
+  .stack_size = 512 * 4
 };
 void gimbal_task(void *argument);
 

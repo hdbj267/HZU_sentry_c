@@ -317,9 +317,9 @@ pid_t delta_pitch=
 
 
 
-uint16_t WINDOW_SIZE=2000;
+uint16_t WINDOW_SIZE=500;
 float slidingWindowFilter(int input) {
-		int window[50] = {0};
+		int window[600] = {0};
     int sum = 0;
     int output;
     sum -= window[0];
@@ -379,7 +379,7 @@ void gimbal_set_and_fdb_update(gimbal_control_data_t *gimbal_control_data,
 		/*下面这一部分的代码是尝试进�?�做视�?��?�测的部分，基本逻辑：由于自瞄时，云台的运动基本�?和敌方�?�甲板的运动绑定�?
 	所以�?�云台的yaw轴�?�速度进�?�长时间的取平均，得到比较平滑的角速度，那么�?��?�速度就与敌方的�?�甲板移动速度正相关，
 	用�?��?�速度给yaw轴做补偿（�?�甲板水平运动时），该部分目前未实践，只�?写了�?接口,能不能用，稳不稳定还不好�?*/
-	gyroy_aver=slidingWindowFilter(abs_fun(gimbal_control_data->gimbal_INS->gyro_y));
+	//gyroy_aver=slidingWindowFilter(abs_fun(gimbal_control_data->gimbal_INS->gyro_y));
 	//delta_yaw_dev=gyroy_aver*yaw_forecast_factor;//用的时候再开
 
 	
@@ -547,6 +547,11 @@ void gimbal_cascade_pid_calculate(gimbal_pid_t *gimbal_pid,       \
 	gimbal_pid->yaw_pid.position_pid.set = gimbal_control_data->gimbal_yaw_set;
 	gimbal_pid->yaw_pid.position_pid.fdb = gimbal_control_data->gimbal_yaw_fdb;
 	gimbal_pid->yaw_pid.position_pid.Calc(&gimbal_pid->yaw_pid.position_pid);
+		
+	gimbal_pid->pitch_pid.position_pid.set = -gimbal_control_data->gimbal_pitch_set;
+	gimbal_pid->pitch_pid.position_pid.fdb = -gimbal_control_data->gimbal_pitch_fdb;
+	gimbal_pid->pitch_pid.position_pid.Calc(&gimbal_pid->pitch_pid.position_pid);
+		
 	
 	//yaw轴速度pid计算
 	//gimbal_pid->yaw_pid.speed_pid.set = 0 ;
@@ -559,16 +564,12 @@ void gimbal_cascade_pid_calculate(gimbal_pid_t *gimbal_pid,       \
 	else
 	{	
 	gimbal_pid->yaw_pid.speed_pid.set   = -gimbal_pid->yaw_pid.position_pid.output;
-	gimbal_pid->pitch_pid.speed_pid.set = -gimbal_pid->pitch_pid.position_pid.output;
+	gimbal_pid->pitch_pid.speed_pid.set = gimbal_pid->pitch_pid.position_pid.output;
 	}
 	}
 	gimbal_pid->yaw_pid.speed_pid.fdb = -gimbal_control_data->gimbal_INS->gyro_y;
 	gimbal_pid->yaw_pid.speed_pid.Calc(&gimbal_pid->yaw_pid.speed_pid);
-	
-	//pitch轴�?�度pid计算
-	gimbal_pid->pitch_pid.position_pid.set = -gimbal_control_data->gimbal_pitch_set;
-	gimbal_pid->pitch_pid.position_pid.fdb = -gimbal_control_data->gimbal_pitch_fdb; 
-	gimbal_pid->pitch_pid.position_pid.Calc(&gimbal_pid->pitch_pid.position_pid);
+
 	//pitch轴速度pid计算
 	gimbal_pid->pitch_pid.speed_pid.fdb = -gimbal_control_data->gimbal_INS->gyro_z;
 	gimbal_pid->pitch_pid.speed_pid.Calc(&gimbal_pid->pitch_pid.speed_pid);	

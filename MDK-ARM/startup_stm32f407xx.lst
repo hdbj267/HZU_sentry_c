@@ -849,11 +849,11 @@ interwork --depend=.\hzu_sentry_c\startup_stm32f407xx.d -o.\hzu_sentry_c\startu
 ARM Macro Assembler    Page 14 
 
 
-p_stm32f407xx.o -I..\Core\Inc -I.\RTE\_HZU_sentry_c -ID:\keil5\ARM\PACK\ARM\CMS
-IS\5.7.0\CMSIS\Core\Include -ID:\keil5\ARM\PACK\Keil\STM32F4xx_DFP\2.16.0\Drive
-rs\CMSIS\Device\ST\STM32F4xx\Include --predefine="__UVISION_VERSION SETA 534" -
--predefine="_RTE_ SETA 1" --predefine="STM32F407xx SETA 1" --predefine="_RTE_ S
-ETA 1" --list=startup_stm32f407xx.lst startup_stm32f407xx.s
+p_stm32f407xx.o -I..\Core\Inc -I.\RTE\_HZU_sentry_c -IC:\Keil_v5\ARM\PACK\ARM\C
+MSIS\5.8.0\CMSIS\Core\Include -IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\D
+rivers\CMSIS\Device\ST\STM32F4xx\Include --predefine="__UVISION_VERSION SETA 53
+6" --predefine="_RTE_ SETA 1" --predefine="STM32F407xx SETA 1" --predefine="_RT
+E_ SETA 1" --list=startup_stm32f407xx.lst startup_stm32f407xx.s
 
 
 

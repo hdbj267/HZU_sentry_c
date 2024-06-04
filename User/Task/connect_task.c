@@ -277,12 +277,12 @@ void send_cmd_to_chassis(_tx2_control_data *control_data)
 extern _tx2_control_data control_data;
 void connect_task(void *argument)
 {	
-	// TickType_t current_time = 0;
+	 TickType_t current_time = 0;
 	
 	connect_init(&connect_data);
 	while(1)
 	{
-		// current_time = xTaskGetTickCount();                         //当前系统时间       *hyj
+	 current_time = xTaskGetTickCount();                         //当前系统时间       *hyj
 		can2_get_rc_data(&connect_data);
 		
 		if((rc_ctrl_data.rc.s1==1||rc_ctrl_data.rc.s1==3)&&rc_ctrl_data.rc.s2==2)//导航挡位才发送导航数据
