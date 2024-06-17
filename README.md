@@ -19,9 +19,9 @@ S2			          s1(一档)			                      s1(二档)				                
 
 gimbal_task/
 
-shoot_task/
+shoot_task/修改射频
 
-rule.c/
+rule.c/修改弹速
 
 connect_task/发送给小电脑云台姿态，机器人id等等信息
 
