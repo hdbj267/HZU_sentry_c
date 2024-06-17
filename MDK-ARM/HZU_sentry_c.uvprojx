@@ -1226,6 +1226,16 @@
               <FileType>5</FileType>
               <FilePath>.\adjust_task.h</FilePath>
             </File>
+            <File>
+              <FileName>README.md</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\README.md</FilePath>
+            </File>
+            <File>
+              <FileName>RECORD.txt</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\RECORD.txt</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

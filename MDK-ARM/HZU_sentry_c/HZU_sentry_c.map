@@ -1943,15 +1943,15 @@ Section Cross References
     connect_task.o(i.connect_task) refers to tasks.o(i.xTaskGetTickCount) for xTaskGetTickCount
     connect_task.o(i.connect_task) refers to connect_task.o(i.can2_get_rc_data) for can2_get_rc_data
     connect_task.o(i.connect_task) refers to connect_task.o(i.send_cmd_to_chassis) for send_cmd_to_chassis
+    connect_task.o(i.connect_task) refers to connect_task.o(i.odem_tx) for odem_tx
     connect_task.o(i.connect_task) refers to connect_task.o(i.send_rc_to_chassis) for send_rc_to_chassis
     connect_task.o(i.connect_task) refers to connect_task.o(i.vision_tx) for vision_tx
-    connect_task.o(i.connect_task) refers to connect_task.o(i.odem_tx) for odem_tx
     connect_task.o(i.connect_task) refers to tasks.o(i.vTaskDelay) for vTaskDelay
     connect_task.o(i.connect_task) refers to connect_task.o(.bss) for connect_data
     connect_task.o(i.connect_task) refers to remote_app.o(.bss) for rc_ctrl_data
     connect_task.o(i.connect_task) refers to usart.o(.bss) for control_data
-    connect_task.o(i.connect_task) refers to ins_task.o(.bss) for INS
     connect_task.o(i.connect_task) refers to can2_app.o(.bss) for odem_data
+    connect_task.o(i.connect_task) refers to ins_task.o(.bss) for INS
     connect_task.o(i.get_connect_data_point) refers to connect_task.o(.bss) for connect_data
     connect_task.o(i.odem_tx) refers to stm32f4xx_hal_uart.o(i.HAL_UART_Transmit) for HAL_UART_Transmit
     connect_task.o(i.odem_tx) refers to connect_task.o(.bss) for radar_tx_data

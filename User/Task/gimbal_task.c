@@ -292,6 +292,7 @@ float abs_fun(float a)
 float vision_K = 1;
 int ROBOT_ROTATE_MOTION_MODE_flag;
 
+//视觉数据外环pid
 pid_t delta_yaw= 
 {
 	.kp = 10,//0.05
@@ -333,7 +334,7 @@ float slidingWindowFilter(int input) {
 		return output;
 }
 
-//全局变量�?多了，最好写进结构体�?
+//全局变量太多了，最好写进结构体
 float tt,PITCH,delta_yaw_dev,delta_pitch_dev=-0.5,delta_pitch_dev_y1=-1.0,delta_pitch_dev_y2=3.0,gyroy_aver,yaw_forecast_factor=0.01;
 extern float yaw_cnt;
 uint8_t vision_flag=0,rotate_break_flag,gimbal_deduce,get_target,vision_control,rotate_deduce,left_num,right_num,enemy_rotate;
@@ -343,11 +344,11 @@ void gimbal_set_and_fdb_update(gimbal_control_data_t *gimbal_control_data,
 							   robot_control_mode_e robot_control_mode,							   
 							   _tx2_control_data control_data  )
 {
-/*根据yaw轴的运动规律判断对方�?否开�?小陀螺，写这�?�?为了做自瞄补偿用，当时时间紧没用�?
-	基本逻辑:在有�?瞄数�?的前提下，云台有规律地左右摇摆，摇摆时大于某�?速度，就认为对面开
-	�?了小陀�?
-	有了这个标志位做反小陀螺的办法：给delta_yaw_dev赋值，让枪管和装甲板在yaw轴差一�?恒定的�?�度�?
-	然后让云台回正时开�?*/
+	/*根据yaw轴的运动规律判断对方是否开启小陀螺，写这个功能为了做自瞄补偿用，时间紧还没用上，但是能判断，就是容易误判
+	基本逻辑:在有自瞄数据的前提下，判断云台有规律地左右摇摆且摇摆时大于某最低速度，就认为对面开了小陀螺
+	
+	有了这个标志位做反小陀螺的办法：给delta_yaw_dev赋值，就能让枪管和对面装甲板在yaw轴差一个恒定的偏差角度
+	然后让云台回正时开枪*/
 	switch(rotate_deduce)
 	{
 		case 0:
@@ -376,15 +377,6 @@ void gimbal_set_and_fdb_update(gimbal_control_data_t *gimbal_control_data,
 	left_num--;
 	}
 	
-		/*下面这一部分的代码是尝试进�?�做视�?��?�测的部分，基本逻辑：由于自瞄时，云台的运动基本�?和敌方�?�甲板的运动绑定�?
-	所以�?�云台的yaw轴�?�速度进�?�长时间的取平均，得到比较平滑的角速度，那么�?��?�速度就与敌方的�?�甲板移动速度正相关，
-	用�?��?�速度给yaw轴做补偿（�?�甲板水平运动时），该部分目前未实践，只�?写了�?接口,能不能用，稳不稳定还不好�?*/
-	//gyroy_aver=slidingWindowFilter(abs_fun(gimbal_control_data->gimbal_INS->gyro_y));
-	//delta_yaw_dev=gyroy_aver*yaw_forecast_factor;//用的时候再开
-
-	
-	
-
 	    if(gimbal_control_data->pitch_motor_fdb_mode == GIMBAL_MOTOR_GYRO)//mpu
 	{
 				if(stop_rotate_flag)
@@ -399,12 +391,12 @@ void gimbal_set_and_fdb_update(gimbal_control_data_t *gimbal_control_data,
 		}
 
 		else if(robot_control_mode == REMOTE_MODE||robot_control_mode == KEY_MOUSE_MODE) 
-			/*s2的二三档，二档手动射弹，三档加上识别到�?�甲板自动射击（已有），导航使用该挡位，当�?��?�没有数�?时可以�?�航�?
-			有数�?将中�?导航，�?��?�标志位�?0才继�?导航，两者都不满足开�?云台�?描模式（构想�?*/
+			/*s2的二三档，二档手动射弹，三档加上识别到装甲板自动射击
 		
+		
+			/*由于给每算一次自瞄给view_control_flag清0，所以这标志位不能作为进入自瞄模式的标志（会跟踪得很不稳定）
+		使用该状态机对该标志位进行改进为get_target标志（可以试试加个滤波会更加稳定，不然偶尔扫到一点自然光会停住）*/
 		{
-			/*由于给每算一次自瞄给view_control_flag�?0，所以这�?标志位不能作为进入自瞄模式的标志（会跟踪得很不稳定）�?
-			使用该状态机对�?�标志位进�?�改进为get_target标志�?*/
 			switch(gimbal_deduce)
 			{
 			case 0:
@@ -428,11 +420,11 @@ void gimbal_set_and_fdb_update(gimbal_control_data_t *gimbal_control_data,
 			}
 				
 
-			if(control_data.recog_flag)	//�?瞄�?�理
+			if(control_data.recog_flag)	//自瞄
 			{
 
 				//delta_pitch_dev=-(control_data.Target_distance-5000.0)/4000.0*(delta_pitch_dev_y1-delta_pitch_dev_y2)+delta_pitch_dev_y2;
-				/*pitch轴差值补偿，用两点式拟合距�?�与补偿量的关系 y=(x-x2)/(x1-x2)*(y1-y2)+y2  (1000,-1) (5000,3)*/
+				/*pitch轴差值补偿，用两点式拟合距离与补偿量的关系 y=(x-x2)/(x1-x2)*(y1-y2)+y2  (1000,-1) (5000,3)*/
 				delta_yaw.set=0;
 				if(control_data.yaw_sign)
 					//delta_yaw.fdb=control_data.yaw_dev-2+delta_yaw_dev;
@@ -449,7 +441,7 @@ void gimbal_set_and_fdb_update(gimbal_control_data_t *gimbal_control_data,
 					delta_pitch.fdb=-control_data.pitch_dev-delta_pitch_dev;
 				delta_pitch.Calc(&delta_pitch);
 				control_data.recog_flag=0;
-				vision_control=1;	//进入�?瞄�?�算标志�?
+				vision_control=1;	//自瞄的计算标志
 			}
 			
 
@@ -457,8 +449,8 @@ void gimbal_set_and_fdb_update(gimbal_control_data_t *gimbal_control_data,
 			else
 			{
 				//hzp
-				yaw_sensit = Logistic(gimbal_abs(gimbal_control_data->rc_ctrl->rc.ch3*0.0182),1,6,0.00015);/*回归函数，旋�?灵敏度随着前进速度
-																																										增大而�?�大，这�?函数应�?�加到�?�兵的鼠标灵敏度里边*/
+				yaw_sensit = Logistic(gimbal_abs(gimbal_control_data->rc_ctrl->rc.ch3*0.0182),1,6,0.00015);/*回归函数，旋转灵敏度随着前进速度
+																																										增大而增大，这个函数应该加到步兵的鼠标灵敏度里边*/
 				
 				gimbal_control_data->gimbal_yaw_set += (-gimbal_control_data->rc_ctrl->rc.ch0) *    \
 													 yaw_sensit;				
@@ -486,7 +478,7 @@ void gimbal_set_and_fdb_update(gimbal_control_data_t *gimbal_control_data,
 		else
 		gimbal_control_data->gimbal_pitch_set=gimbal_control_data->gimbal_pitch_set;
 	}
-	else if(gimbal_control_data->pitch_motor_fdb_mode == GIMBAL_MOTOR_ENCONDE)//初�?�化时的编码模式 set �?�?�?
+	else if(gimbal_control_data->pitch_motor_fdb_mode == GIMBAL_MOTOR_ENCONDE)//初始化时的编码模式 
 	{
 		//yaw
 		gimbal_control_data->gimbal_yaw_set =  gimbal_control_data->gimbal_INS->yaw_angle\
@@ -527,21 +519,19 @@ void gimbal_cascade_pid_calculate(gimbal_pid_t *gimbal_pid,       \
 {
 	
 	//yaw轴�?�度pid计算
-		if((gimbal_work_mode == GIMBAL_ROTATE_MODE)&&(!get_target))	//s1的三档，云台�?描挡
+		if((gimbal_work_mode == GIMBAL_ROTATE_MODE)&&(!get_target))	//s1的三档，云台扫描挡
 		//if(((gimbal_work_mode == GIMBAL_ROTATE_MODE)&&(lose_flag))||first_rotate)	
 	{
-	gimbal_control_data->gimbal_pitch_set= -12.5 * sin( tt * PI/180);//�?描时pitch的�?�度变化
-	//gimbal_control_data->gimbal_pitch_set=0;
+	gimbal_control_data->gimbal_pitch_set= -12.5 * sin( tt * PI/180);//扫描时pitch的角度变化
+	gimbal_pid->pitch_pid.position_pid.Calc(&gimbal_pid->pitch_pid.position_pid);
+	gimbal_pid->pitch_pid.speed_pid.set = gimbal_pid->pitch_pid.position_pid.output;
   tt+=0.07;
   if(tt==180)
-  tt=0;
-  gimbal_control_data->gimbal_yaw_fdb = gimbal_control_data->gimbal_INS->yaw_angle;
-  gimbal_control_data->gimbal_pitch_fdb = gimbal_control_data->gimbal_INS->pitch_angle;	
-
-	gimbal_pid->yaw_pid.speed_pid.set = -150;	//云台�?描时的旋�?速度
+  tt=0;	
+	gimbal_pid->yaw_pid.speed_pid.set = -150;	//云台扫描时的旋转速度
 	gimbal_pid->yaw_pid.speed_pid.fdb = -gimbal_control_data->gimbal_INS->gyro_y;
 	}
-	else
+	else	//普通云台模式
 	{
 	//gimbal_pid->yaw_pid.position_pid.set = gimbal_control_data->gimbal_yaw_set;
 	gimbal_pid->yaw_pid.position_pid.set = gimbal_control_data->gimbal_yaw_set;
@@ -555,22 +545,22 @@ void gimbal_cascade_pid_calculate(gimbal_pid_t *gimbal_pid,       \
 	
 	//yaw轴速度pid计算
 	//gimbal_pid->yaw_pid.speed_pid.set = 0 ;
-	if(vision_control)
+	if(vision_control)	//有视觉
 	{
 	gimbal_pid->yaw_pid.speed_pid.set   = -delta_yaw.output;
 	gimbal_pid->pitch_pid.speed_pid.set = -delta_pitch.output;
 	vision_control=0;
 	}
-	else
-	{	
-	gimbal_pid->yaw_pid.speed_pid.set   = -gimbal_pid->yaw_pid.position_pid.output;
+	else	//没有视觉
+	{
 	gimbal_pid->pitch_pid.speed_pid.set = gimbal_pid->pitch_pid.position_pid.output;
+	gimbal_pid->yaw_pid.speed_pid.set   = -gimbal_pid->yaw_pid.position_pid.output;
 	}
 	}
+	//剩下一些是都需要赋值的
 	gimbal_pid->yaw_pid.speed_pid.fdb = -gimbal_control_data->gimbal_INS->gyro_y;
 	gimbal_pid->yaw_pid.speed_pid.Calc(&gimbal_pid->yaw_pid.speed_pid);
 
-	//pitch轴速度pid计算
 	gimbal_pid->pitch_pid.speed_pid.fdb = -gimbal_control_data->gimbal_INS->gyro_z;
 	gimbal_pid->pitch_pid.speed_pid.Calc(&gimbal_pid->pitch_pid.speed_pid);	
 	
@@ -585,9 +575,8 @@ void gimbal_cascade_pid_calculate(gimbal_pid_t *gimbal_pid,       \
 void gimbal_control_loop(gimbal_pid_t *gimbal_pid,       \
 					     gimbal_control_data_t *gimbal_control_data)
 {
-	//这里改为了�?��?
 
-	gimbal_control_data->given_current.yaw_motor = -gimbal_pid->yaw_pid.speed_pid.output;//g6020反向安�?�需要加负号
+	gimbal_control_data->given_current.yaw_motor = -gimbal_pid->yaw_pid.speed_pid.output;//g6020反向安装需要加负号
 	gimbal_control_data->given_current.pitch_motor = gimbal_pid->pitch_pid.speed_pid.output;
 	//gimbal_control_data->given_current.yaw_motor = 0;
 	//gimbal_control_data->given_current.pitch_motor = 0;
@@ -681,11 +670,11 @@ void gimbal_task(void *argument)
 	{		
 		current_time = xTaskGetTickCount();                         //当前系统时间       *hyj
 		send_gyro_data_to_chassis();
-		gimbal_work_mode_update(&rc_ctrl_data, &gimbal_control_data);//更新云台状�?
+		gimbal_work_mode_update(&rc_ctrl_data, &gimbal_control_data);//更新云台状态
 		gimbal_set_and_fdb_update(&gimbal_control_data, robot_control_mode, control_data );//set fdb数据更新
 		
 		gimbal_cascade_pid_calculate(&gimbal_pid, &gimbal_control_data);//串级pid计算
-		gimbal_control_loop(&gimbal_pid, &gimbal_control_data);//控制�?�?
-		vTaskDelayUntil(&current_time, GIMBAL_TASK_TIME_1MS);       //1ms一�?         *hyj     
+		gimbal_control_loop(&gimbal_pid, &gimbal_control_data);//发送控制电流
+		vTaskDelayUntil(&current_time, GIMBAL_TASK_TIME_1MS);       //1ms执行一次         *hyj     
 	}	
 }

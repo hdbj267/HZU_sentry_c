@@ -286,11 +286,14 @@ void connect_task(void *argument)
 		can2_get_rc_data(&connect_data);
 		
 		if((rc_ctrl_data.rc.s1==1||rc_ctrl_data.rc.s1==3)&&rc_ctrl_data.rc.s2==2)//导航挡位才发送导航数据
+		{
 		send_cmd_to_chassis(&control_data);
+		odem_tx(&odem_data);//串口发送给小电脑巡航数据
+		}
 		
 		send_rc_to_chassis(&connect_data.can2_rc_ctrl);
-		vision_tx(&vision_tx_data,&INS);
-		odem_tx(&odem_data);//串口发送给小电脑巡航数据
+		vision_tx(&vision_tx_data,&INS);	//发送给小电脑云台姿态，机器人id等等信息
+		
 		
 		vTaskDelay(10);                        // 10ms一次
 		
